@@ -1,3 +1,4 @@
+import os
 import warnings
 from datetime import datetime as dtm
 
@@ -9,7 +10,6 @@ from init_funcs import gather_and_init
 from rich.console import Console
 from torch import distributed as dist
 from trainer import Trainer
-import os
 
 warnings.filterwarnings('ignore')
 
@@ -27,7 +27,6 @@ def main(cfg):
         utils.print_config(cfg, console)
         console.print('We are ready to start training! :rocket:', style='bold red')
 
-    # main loop
     for epoch in range(1, cfg.train.n_epoch + 1):
         if train_options['rank'] == 0:
             console.print(f'[bold yellow]Epoch: [/]{epoch} / {cfg.train.n_epoch}')

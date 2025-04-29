@@ -1,7 +1,8 @@
 import sys
+from datetime import datetime as dtm
+
 import torch
 import torch.nn as nn
-from datetime import datetime as dtm
 import torch.nn.functional as F
 from logger import logging, logging_images, logging_lr
 
@@ -17,7 +18,6 @@ class Trainer:
         self.step = 0
         self.console = console
 
-        # Инициализация памяти (аналог m_items из оригинального кода)
         self.memory_items = F.normalize(
             torch.rand((cfg.model.memory_size, cfg.model.key_dim), dtype=torch.float),
             dim=1
@@ -44,21 +44,17 @@ class Trainer:
 
             batch = batch.cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
             
-            # Forward pass с памятью (аналог оригинального кода)
             outputs, _, _, self.memory_items, _, _, separateness_loss, compactness_loss = self.model(
                 batch, self.memory_items, train=True
             )
 
-            # Расчет потерь
             loss_pixel = torch.nn.functional.mse_loss(outputs, batch, reduction='mean')
             loss = loss_pixel + \
                    self.cfg.train.loss_compact * compactness_loss + \
                    self.cfg.train.loss_separate * separateness_loss
 
-            # Оптимизация
             self._do_optim_step(loss)
 
-            # Логирование промежуточных потерь
             total_loss += loss.item()
             total_pixel_loss += loss_pixel.item()
             total_compact_loss += compactness_loss.item()
