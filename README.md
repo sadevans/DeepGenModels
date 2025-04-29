@@ -187,7 +187,7 @@ bash scripts/run_inference.sh
 
 На данный момент лучший порог по MSE - `0.0003`. Для него вот такие графики.
 
-<img src="./figs/threshold_analysis.png" alt="" width="900" height="400">
+<img src="./hw1/figs/threshold_analysis.png" alt="" width="900" height="400">
 
 С ним получаются вот такие метрики:
 
@@ -200,10 +200,10 @@ bash scripts/run_inference.sh
 
 Кривая ROC выглядит вот так:
 
-<img src="./figs/test_roc_curve.png" alt="" width="400" height="400">
+<img src="./hw1/figs/test_roc_curve.png" alt="" width="400" height="400">
 
 
 Пример тестовых изображений и реконстурированных:
 
-<img src="./figs/original_test_batch.png" alt="" width="400" height="400">
-<img src="./figs/rec_test_batch.png" alt="" width="400" height="400">
+<img src="./hw1/figs/original_test_batch.png" alt="" width="400" height="400">
+<img src="./hw1/figs/rec_test_batch.png" alt="" width="400" height="400">
