@@ -4,7 +4,7 @@ GPUS=7
 N_PROC=1
 GPU=7
 
-for EXP in  _mnad5
+for EXP in  _mnad6
 
 do
 echo anomaly$EXP

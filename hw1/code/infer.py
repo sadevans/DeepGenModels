@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision
 import utils
 from rich.console import Console
 from sklearn.metrics import (auc, mean_squared_error, precision_recall_curve,
@@ -119,8 +120,10 @@ class MNADEvaluator:
         all_labels = []
         all_outputs = []
         
+        i = -1
         with torch.no_grad():
             for data, labels in test_loader:
+                i += 1
                 data = data.to(self.device)
                 labels = labels.cpu().numpy()
                 
@@ -130,6 +133,25 @@ class MNADEvaluator:
                 all_scores.extend(batch_scores)
                 all_labels.extend(labels)
                 all_outputs.extend((batch_scores > threshold).astype(int))
+
+                if i == 0:
+                    batch = data[:16]
+                    batch_grid = torchvision.utils.make_grid(batch, nrow=4)
+                    batch_grid = batch_grid.permute(1, 2, 0).cpu().numpy()
+                    plt.imshow(batch_grid)
+                    plt.axis('off')
+                    plt.suptitle('Original Test Batch')
+                    plt.savefig(os.path.join('./figs/', 'original_test_batch.png'), dpi=300)
+                    plt.close()
+
+                    batch = outputs[:16]
+                    batch_grid = torchvision.utils.make_grid(batch, nrow=4)
+                    batch_grid = batch_grid.permute(1, 2, 0).cpu().numpy()
+                    plt.imshow(batch_grid)
+                    plt.axis('off')
+                    plt.suptitle('Reconstructed Test Batch')
+                    plt.savefig(os.path.join('./figs/', 'rec_test_batch.png'), dpi=300)
+                    plt.close()
         
         tn, fp, fn, tp = confusion_matrix(all_labels, all_outputs).ravel()
         tpr = tp / (tp + fn)
@@ -142,8 +164,26 @@ class MNADEvaluator:
         self.console.print(f"Accuracy: {accuracy:.4f}")
         
         self._plot_confusion_matrix(all_labels, all_outputs)
+        self._plot_test_roc_curve(all_labels, all_scores)
+
         
         return tpr, tnr, accuracy
+    
+    def _plot_test_roc_curve(self, true_labels, scores):
+        """Plot ROC curve for test set"""
+        fpr, tpr, _ = roc_curve(true_labels, scores)
+        roc_auc = auc(fpr, tpr)
+
+        plt.figure(figsize=(6, 6))
+        plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+        plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC Curve (Test Set)')
+        plt.legend(loc="lower right")
+        plt.tight_layout()
+        plt.savefig('./figs/test_roc_curve.png', dpi=300)
+        plt.close()
 
     def _plot_confusion_matrix(self, true_labels, pred_labels):
         """Plot and save confusion matrix"""
@@ -170,6 +210,7 @@ class MNADEvaluator:
         plt.tight_layout()
         plt.savefig('./figs/confusion_matrix.png', dpi=300)
         plt.close()
+
 
 @hydra.main(version_base=None)
 def main(cfg):
