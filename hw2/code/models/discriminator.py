@@ -5,7 +5,6 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         
         self.model = nn.Sequential(
-            # Вход: 3 x 128 x 128
             nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1),
             nn.LeakyReLU(0.2, inplace=True),
             
@@ -25,7 +24,6 @@ class Discriminator(nn.Module):
             nn.BatchNorm2d(1024),
             nn.LeakyReLU(0.2, inplace=True),
             
-            # Выходной слой
             nn.Conv2d(1024, 1, kernel_size=4, stride=1, padding=0),
             nn.Sigmoid()
         )

@@ -51,7 +51,7 @@ class Trainer:
 
     def _save_checkpoint(self):
         """Сохранение чекпоинта"""
-        if self.step % self.cfg.train.save_interval == 0:
+        if self.epoch % self.cfg.train.save_interval == 0:
             utils.save_checkpoint(self.generator, self.options, self.epoch,  type='generator')
             utils.save_checkpoint(self.discriminator, self.options, self.epoch,  type='discriminator')
 
@@ -146,7 +146,7 @@ class Trainer:
             if self.step % self.sample_interval == 0:
                 self._generate_samples()
             
-            self._save_checkpoint()
+        self._save_checkpoint()
         
         epoch_time = (dtm.now() - start_time).total_seconds()
         self.console.print(f"Epoch {epoch} completed in {epoch_time:.2f} seconds")
