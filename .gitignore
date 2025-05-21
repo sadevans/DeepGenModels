@@ -172,3 +172,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+./*/dataset/
+./*/cache_dir/*
+./hw4/bitsandbytes/
+./hw4/diffusers/
+./hw4/experiments/
+./*/*.ckpt
