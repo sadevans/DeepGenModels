@@ -1,5 +1,7 @@
 #!/bin/bash
 mkdir -p cache_dir
+mkdir -p experiments
+mkdir -p dumps
 cd cache_dir
 mkdir -p models
 cd ..
