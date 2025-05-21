@@ -67,7 +67,7 @@ def gather_and_init(config):  # noqa: WPS210
         'generator': generator,
         'discriminator':discriminator,
         'train_loader': train_loader,
-        'loss': criterion,
+        'criterion': criterion,
         'optimizer_G': optimizer_G,
         'optimizer_D': optimizer_D,
         # 'use_amp': use_amp,

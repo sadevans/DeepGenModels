@@ -3,6 +3,7 @@ import torchvision.utils as vutils
 from datetime import datetime as dtm
 import os
 import utils
+from logger import logging_images, logging_lr, logging
 
 class Trainer:
     def __init__(self, cfg, options, task, console):
@@ -16,9 +17,9 @@ class Trainer:
         self.criterion = options['criterion']
         
         self.cfg = cfg
-        self.z_dim = cfg.model.z_dim
+        self.z_dim = cfg.generator.z_dim
         self.save_dir = cfg.train.save_dir
-        self.log_interval = cfg.train.log_interval
+        self.log_interval = cfg.train.freq_vis
         self.sample_interval = cfg.train.sample_interval
         
         self.epoch = 0
@@ -38,22 +39,15 @@ class Trainer:
 
     def _log_metrics(self, d_loss, g_loss, real_score):
         """Логирование метрик в ClearML"""
-        self.logger.report_scalar("Loss", "Discriminator", d_loss, self.step)
-        self.logger.report_scalar("Loss", "Generator", g_loss, self.step)
-        self.logger.report_scalar("Score", "Real", real_score, self.step)
+        logging(self.logger, metrics='loss', value_to_log=d_loss, step=self.step, is_train=True, type='Discriminator')
+        logging(self.logger, metrics='loss', value_to_log=g_loss, step=self.step, is_train=True, type='Generator')
+        logging(self.logger, metrics='real score', value_to_log=real_score, step=self.step, is_train=True, type='Real')
 
     def _log_lr(self):
         """Логирование learning rate"""
-        self.logger.report_scalar(
-            "LR", "Generator", 
-            self.optimizer_G.param_groups[0]['lr'], 
-            self.step
-        )
-        self.logger.report_scalar(
-            "LR", "Discriminator", 
-            self.optimizer_D.param_groups[0]['lr'], 
-            self.step
-        )
+        logging_lr(self.logger, self.optimizer_G.param_groups[0]['lr'], self.step, type='Generator')
+        logging_lr(self.logger, self.optimizer_D.param_groups[0]['lr'], self.step, type='Discriminator')
+
 
     def _save_checkpoint(self):
         """Сохранение чекпоинта"""
@@ -68,12 +62,11 @@ class Trainer:
             fake_images = self.generator(self.fixed_noise).detach().cpu()
         
         img_grid = vutils.make_grid(fake_images, padding=2, normalize=True)
+        # np_img = img_grid.permute(1, 2, 0).numpy()
         
-        self.logger.report_image(
-            "Generated Images", 
-            "Samples", 
-            iteration=self.step, 
-            image=img_grid
+        logging_images(
+            fake_images, 
+            self.step, 
         )
         
         if self.step % self.sample_interval == 0:
@@ -94,20 +87,20 @@ class Trainer:
         
         real_outputs = self.discriminator(real_imgs)
         d_loss_real = self.criterion(real_outputs, real_labels)
+        d_loss_real.backward()
         
-        noise = torch.randn(batch_size, self.z_dim).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
-        fake_imgs = self.generator(noise).detach()
-        fake_outputs = self.discriminator(fake_imgs)
+        noise = torch.randn(batch_size, self.z_dim, 4, 4).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
+        fake_imgs = self.generator(noise)
+        fake_outputs = self.discriminator(fake_imgs.detach())
         d_loss_fake = self.criterion(fake_outputs, fake_labels)
+        d_loss_fake.backward()
         
         d_loss = d_loss_real + d_loss_fake
-        d_loss.backward()
+        # d_loss.backward()
         self.optimizer_D.step()
 
         self.optimizer_G.zero_grad()
-        
-        noise = torch.randn(batch_size, self.z_dim).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
-        fake_imgs = self.generator(noise)
+
         outputs = self.discriminator(fake_imgs)
         g_loss = self.criterion(outputs, real_labels)
         
@@ -129,7 +122,7 @@ class Trainer:
         
         start_time = dtm.now()
         
-        for step, real_imgs in enumerate(self.options['train_loader']):
+        for step, (real_imgs, labels) in enumerate(self.options['train_loader']):
             self.step += 1
             
             losses = self.train_step(real_imgs)
