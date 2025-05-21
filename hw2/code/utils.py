@@ -44,9 +44,9 @@ def load_model(config, type='generator', is_train=False):
     WeightsEnum.get_state_dict = get_state_dict
 
     if type == 'generator':
-        model = instantiate(config.generator.arch)
+        model = instantiate(config.generator)
     elif type == 'discriminator':
-        model = instantiate(config.discriminator.arch)
+        model = instantiate(config.discriminator)
 
     # last_module_name = list(model.named_modules())[-1][0].split('.')[0]
     # if last_module_name == 'fc':

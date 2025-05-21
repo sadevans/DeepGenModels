@@ -11,32 +11,26 @@ class Trainer:
         self.generator = options['generator'].to(self.device)
         self.discriminator = options['discriminator'].to(self.device)
         
-        # Оптимизаторы
         self.optimizer_G = options['optimizer_G']
         self.optimizer_D = options['optimizer_D']
         self.criterion = options['criterion']
         
-        # Конфигурация
         self.cfg = cfg
         self.z_dim = cfg.model.z_dim
         self.save_dir = cfg.train.save_dir
         self.log_interval = cfg.train.log_interval
         self.sample_interval = cfg.train.sample_interval
         
-        # Состояние обучения
         self.epoch = 0
         self.step = 0
         self.console = console
         self.task = task
         
-        # Создание директорий
         os.makedirs(self.save_dir, exist_ok=True)
         os.makedirs(os.path.join(self.save_dir, "checkpoints"), exist_ok=True)
         
-        # Фиксированный шум для визуализации
         self.fixed_noise = torch.randn(64, self.z_dim, device=self.device)
         
-        # Инициализация логирования
         if options['rank'] == 0:
             self.logger = task.get_logger()
             self._log_metrics(0, 0, 0)
@@ -67,20 +61,6 @@ class Trainer:
             utils.save_checkpoint(self.generator, self.options, self.epoch,  type='generator')
             utils.save_checkpoint(self.discriminator, self.options, self.epoch,  type='discriminator')
 
-            # checkpoint = {
-            #     'epoch': self.epoch,
-            #     'step': self.step,
-            #     'generator': self.generator.state_dict(),
-            #     'discriminator': self.discriminator.state_dict(),
-            #     'optimizer_G': self.optimizer_G.state_dict(),
-            #     'optimizer_D': self.optimizer_D.state_dict(),
-            # }
-            # path = os.path.join(
-            #     self.save_dir, 
-            #     "checkpoints", 
-            #     f"gan_epoch_{self.epoch}_step_{self.step}.pth"
-            # )
-            # torch.save(checkpoint, path)
 
     def _generate_samples(self):
         """Генерация и сохранение примеров"""
@@ -89,7 +69,6 @@ class Trainer:
         
         img_grid = vutils.make_grid(fake_images, padding=2, normalize=True)
         
-        # Логирование в ClearML
         self.logger.report_image(
             "Generated Images", 
             "Samples", 
@@ -97,7 +76,6 @@ class Trainer:
             image=img_grid
         )
         
-        # Сохранение на диск
         if self.step % self.sample_interval == 0:
             vutils.save_image(
                 img_grid,
@@ -109,18 +87,14 @@ class Trainer:
         real_imgs = real_imgs.to(self.device)
         batch_size = real_imgs.size(0)
         
-        # Подготовка меток
         real_labels = torch.ones(batch_size, 1, device=self.device)
         fake_labels = torch.zeros(batch_size, 1, device=self.device)
 
-        # ===== Обучение дискриминатора =====
         self.optimizer_D.zero_grad()
         
-        # Потери на реальных изображениях
         real_outputs = self.discriminator(real_imgs)
         d_loss_real = self.criterion(real_outputs, real_labels)
         
-        # Потери на фейковых изображениях
         noise = torch.randn(batch_size, self.z_dim, device=self.device)
         fake_imgs = self.generator(noise).detach()
         fake_outputs = self.discriminator(fake_imgs)
@@ -130,7 +104,6 @@ class Trainer:
         d_loss.backward()
         self.optimizer_D.step()
 
-        # ===== Обучение генератора =====
         self.optimizer_G.zero_grad()
         
         noise = torch.randn(batch_size, self.z_dim, device=self.device)
@@ -159,10 +132,8 @@ class Trainer:
         for step, real_imgs in enumerate(self.options['train_loader']):
             self.step += 1
             
-            # Шаг обучения
             losses = self.train_step(real_imgs)
 
-            # Логирование
             if self.step % self.log_interval == 0 and self.options['rank'] == 0:
                 self._log_metrics(
                     losses['d_loss'], 
@@ -179,11 +150,9 @@ class Trainer:
                     f"D(x): {losses['real_score']:.4f}"
                 )
 
-            # Генерация примеров
             if self.step % self.sample_interval == 0:
                 self._generate_samples()
             
-            # Сохранение чекпоинтов
             self._save_checkpoint()
         
         epoch_time = (dtm.now() - start_time).total_seconds()

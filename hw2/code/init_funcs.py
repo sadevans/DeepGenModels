@@ -4,11 +4,8 @@ import random
 import numpy as np
 import torch
 import utils
-import wandb
 from clearml import Task
-from data import get_dataloader
 from torchvision.datasets import CelebA
-# from data_copy import get_dataloader
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 
@@ -45,8 +42,8 @@ def gather_and_init(config):  # noqa: WPS210
     init_seeds(config)
     # rank, model = init_ddp_model(config)
 
-    rank, generator = init_model(config, type='generator')
-    rank, discriminator = init_model(config, type='discriminator')
+    rank, generator, discriminator = init_model(config)
+    # rank, discriminator = init_model(config, type='discriminator')
 
     use_amp, scaler = init_mixed_precision(config)
     outdir = create_save_folder(config, rank)
@@ -54,8 +51,9 @@ def gather_and_init(config):  # noqa: WPS210
     # task = None
     transform = utils.get_transform(config, is_train=True)
 
+    os.makedirs('./data/celeba', exist_ok=True)
     celeba_dataset = CelebA(root='./data/celeba', split='train', target_type='attr', transform=transform, download=True)
-    train_loader = DataLoader(celeba_dataset, batch_size=config.dataset.batch_size, shuffle=True)
+    train_loader = DataLoader(celeba_dataset, batch_size=config.dataset.batch_size, num_workers=config.dataset.num_workers, shuffle=True)
 
 
     
@@ -115,13 +113,17 @@ def init_mixed_precision(config):
     return use_amp, scaler
 
 
-def init_model(config, type='generator'):
+def init_model(config):
     dist.init_process_group(backend='nccl', init_method='env://')
     rank = dist.get_rank()
     torch.cuda.set_device(rank)
 
-    net = utils.load_model(config, type=type, is_train=True).cuda()
-    #sync_bn_net = torch.nn.SyncBatchNorm.convert_sync_batchnorm(net, rank)
-    ddp_net = DDP(net, device_ids=[rank])
+    gen = utils.load_model(config, type='generator', is_train=True).cuda()
+    discr = utils.load_model(config, type='discriminator', is_train=True).cuda()
 
-    return rank, ddp_net
+    #sync_bn_net = torch.nn.SyncBatchNorm.convert_sync_batchnorm(net, rank)
+    ddp_gen = DDP(gen, device_ids=[rank])
+    ddp_discr = DDP(discr, device_ids=[rank])
+
+
+    return rank, ddp_gen, ddp_discr
