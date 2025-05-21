@@ -7,6 +7,7 @@ import utils
 from clearml import Task
 from torchvision.datasets import CelebA
 from torch.utils.data import DataLoader
+import torchvision.datasets as dset
 import torchvision.transforms as transforms
 
 from omegaconf import OmegaConf
@@ -45,21 +46,22 @@ def gather_and_init(config):  # noqa: WPS210
     rank, generator, discriminator = init_model(config)
     # rank, discriminator = init_model(config, type='discriminator')
 
-    use_amp, scaler = init_mixed_precision(config)
+    # use_amp, scaler = init_mixed_precision(config)
     outdir = create_save_folder(config, rank)
     task = create_task(config, rank)
     # task = None
     transform = utils.get_transform(config, is_train=True)
 
-    os.makedirs('./data/celeba', exist_ok=True)
-    celeba_dataset = CelebA(root='./data/celeba', split='train', target_type='attr', transform=transform, download=True)
+    # os.makedirs('./data/celeba', exist_ok=True)
+    # celeba_dataset = CelebA(root='/ssd/a.gorokhova/datasets/itmo/celeba/', split='train', target_type='attr', transform=transform, download=False)
+    celeba_dataset = dset.ImageFolder(root='/ssd/a.gorokhova/datasets/itmo/celeba/', transform=transform)
     train_loader = DataLoader(celeba_dataset, batch_size=config.dataset.batch_size, num_workers=config.dataset.num_workers, shuffle=True)
 
 
     
     num_batches = len(train_loader)
-    criterion, optimizer_G, optimizer_D, scheduler = utils.get_training_parameters(config, generator, discriminator, num_batches)
-    mixer = utils.get_mixer(config)
+    criterion, optimizer_G, optimizer_D, _, _ = utils.get_training_parameters(config, generator, discriminator, num_batches)
+    # mixer = utils.get_mixer(config)
 
     train_options = {
         'generator': generator,
@@ -68,12 +70,12 @@ def gather_and_init(config):  # noqa: WPS210
         'loss': criterion,
         'optimizer_G': optimizer_G,
         'optimizer_D': optimizer_D,
-        'use_amp': use_amp,
-        'scaler': scaler,
+        # 'use_amp': use_amp,
+        # 'scaler': scaler,
         'rank': rank,
-        'scheduler': scheduler,
+        # 'scheduler': scheduler,
         'outdir': outdir,
-        'mixer': mixer,
+        # 'mixer': mixer,
     }
 
     return train_options, task

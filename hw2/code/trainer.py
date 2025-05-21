@@ -7,9 +7,9 @@ import utils
 class Trainer:
     def __init__(self, cfg, options, task, console):
         self.options = options
-        self.device = options['device']
-        self.generator = options['generator'].to(self.device)
-        self.discriminator = options['discriminator'].to(self.device)
+        # self.device = options['device']
+        self.generator = options['generator']
+        self.discriminator = options['discriminator']
         
         self.optimizer_G = options['optimizer_G']
         self.optimizer_D = options['optimizer_D']
@@ -29,7 +29,7 @@ class Trainer:
         os.makedirs(self.save_dir, exist_ok=True)
         os.makedirs(os.path.join(self.save_dir, "checkpoints"), exist_ok=True)
         
-        self.fixed_noise = torch.randn(64, self.z_dim, device=self.device)
+        self.fixed_noise = torch.randn(64, self.z_dim).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
         
         if options['rank'] == 0:
             self.logger = task.get_logger()
@@ -84,18 +84,18 @@ class Trainer:
 
     def train_step(self, real_imgs):
         """Один шаг обучения"""
-        real_imgs = real_imgs.to(self.device)
+        real_imgs = real_imgs.cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
         batch_size = real_imgs.size(0)
         
-        real_labels = torch.ones(batch_size, 1, device=self.device)
-        fake_labels = torch.zeros(batch_size, 1, device=self.device)
+        real_labels = torch.ones(batch_size, 1).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
+        fake_labels = torch.zeros(batch_size, 1).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
 
         self.optimizer_D.zero_grad()
         
         real_outputs = self.discriminator(real_imgs)
         d_loss_real = self.criterion(real_outputs, real_labels)
         
-        noise = torch.randn(batch_size, self.z_dim, device=self.device)
+        noise = torch.randn(batch_size, self.z_dim).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
         fake_imgs = self.generator(noise).detach()
         fake_outputs = self.discriminator(fake_imgs)
         d_loss_fake = self.criterion(fake_outputs, fake_labels)
@@ -106,7 +106,7 @@ class Trainer:
 
         self.optimizer_G.zero_grad()
         
-        noise = torch.randn(batch_size, self.z_dim, device=self.device)
+        noise = torch.randn(batch_size, self.z_dim).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
         fake_imgs = self.generator(noise)
         outputs = self.discriminator(fake_imgs)
         g_loss = self.criterion(outputs, real_labels)
