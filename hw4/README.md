@@ -80,15 +80,24 @@ exp1.1
 --seed 31
 ```
 Буду сравнивать такие промпты:
+
 `prompt1` : portrait of sks woman face, on the street, lights, midnight, NY, standing, 4K, raw, hrd, hd, high quality, realism, sharp focus,  beautiful eyes, detailed eyes
+
 `prompt2` : portrait of sks woman face, in the desert, wearing a dress, sun, pyramids, сamels, Egypt, standing, standing alone, 4K, raw, hrd, hd, high quality, realism, sharp focus,  beautiful eyes, detailed eyes
+
 `prompt3` : portrait of sks woman face, in the game of thrones, wearing a dress, holding a knife, standing aside, dragons nearby, lord jojn snow holding hands with her, 4K, raw, hrd, hd, high quality, realism, sharp focus,  beautiful eyes, detailed eyes
+
 `prompt4` : portrait of sks woman face, cinderella, in the princess castle with rainbow, full height, crying, cartoon, 4K, raw, hrd, hd, high quality, sharp focus
-`prompt5` : a face of sks woman, astronaut, moon, space, full height, 4K, raw, hrd, hd, high quality, sharp focu
+
+`prompt5` : a face of sks woman, astronaut, moon, space, full height, 4K, raw, hrd, hd, high quality, sharp focus
+
 Результаты получились такие:
+
 
 | exp      | `prompt1` | `prompt2` | `prompt3` | `prompt4` | `prompt5` |
 |----------|----------|----------|----------|----------|----------|
-| `exp1.1` | <img src="./results/exp1.1/prompt1.png" width="300"> | <img src="./results/exp1.1/prompt2.png" width="300"> | <img src="./results/exp1.1/prompt3.png" width="300"> | <img src="./results/exp1.1/prompt4.png" width="300"> | <img src="./results/exp1.1/prompt5.png" width="300"> |
+| `exp1.1` | <img src="./results/exp1/prompt1_img1.png" width="300"> | <img src="./results/exp1/prompt2_img1.png" width="300"> | <img src="./results/exp1/prompt3_img1.png" width="300"> | <img src="./results/exp1/prompt4_img1.png" width="300"> | <img src="./results/exp1/prompt5_img1.png" width="300"> |
+| `exp2` | <img src="./results/exp2/prompt1_img1.png" width="300"> | <img src="./results/exp2/prompt2_img1.png" width="300"> | <img src="./results/exp2/prompt3_img1.png" width="300"> | <img src="./results/exp2/prompt4_img1.png" width="300"> | <img src="./results/exp2/prompt5_img1.png" width="300"> |
+| `exp3` | <img src="./results/exp3/prompt1_img1.png" width="300"> | <img src="./results/exp3/prompt2_img1.png" width="300"> | <img src="./results/exp3/prompt3_img1.png" width="300"> | <img src="./results/exp3/prompt4_img1.png" width="300"> | <img src="./results/exp3/prompt5_img1.png" width="300"> |
 
 Планирую еще попробовать другие параметры и сделать остальные пункты.
