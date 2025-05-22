@@ -100,4 +100,11 @@ exp1.1
 | `exp2` | <img src="./results/exp2/prompt1_img1.png" width="300"> | <img src="./results/exp2/prompt2_img1.png" width="300"> | <img src="./results/exp2/prompt3_img1.png" width="300"> | <img src="./results/exp2/prompt4_img1.png" width="300"> | <img src="./results/exp2/prompt5_img1.png" width="300"> |
 | `exp3` | <img src="./results/exp3/prompt1_img1.png" width="300"> | <img src="./results/exp3/prompt2_img1.png" width="300"> | <img src="./results/exp3/prompt3_img1.png" width="300"> | <img src="./results/exp3/prompt4_img1.png" width="300"> | <img src="./results/exp3/prompt5_img1.png" width="300"> |
 
-Планирую еще попробовать другие параметры и сделать остальные пункты.
+
+### Обучение LORA
+
+| exp      | `prompt1` | `prompt2` | `prompt3` | `prompt4` | `prompt5` |
+|----------|----------|----------|----------|----------|----------|
+| `exp1.1` | <img src="./results/exp1_lora/prompt1_img1.png" width="300"> | <img src="./results/exp1_lora/prompt2_img1.png" width="300"> | <img src="./results/exp1_lora/prompt3_img1.png" width="300"> | <img src="./results/exp1_lora/prompt4_img1.png" width="300"> | <img src="./results/exp1_lora/prompt5_img1.png" width="300"> |
+| `exp2` | <img src="./results/exp2_lora/prompt1_img1.png" width="300"> | <img src="./results/exp2_lora/prompt2_img1.png" width="300"> | <img src="./results/exp2_lora/prompt3_img1.png" width="300"> | <img src="./results/exp2_lora/prompt4_img1.png" width="300"> | <img src="./results/exp2_lora/prompt5_img1.png" width="300"> |
+<!-- | `exp3` | <img src="./results/exp3/prompt1_img1.png" width="300"> | <img src="./results/exp3/prompt2_img1.png" width="300"> | <img src="./results/exp3/prompt3_img1.png" width="300"> | <img src="./results/exp3/prompt4_img1.png" width="300"> | <img src="./results/exp3/prompt5_img1.png" width="300"> | -->
