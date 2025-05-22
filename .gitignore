@@ -178,3 +178,7 @@ cython_debug/
 ./hw4/diffusers/
 ./hw4/experiments/
 ./*/*.ckpt
+./*/*.safetensors
+./hw4/dumps/
+./hw4/experiments/
+./hw4/wget-log.1
