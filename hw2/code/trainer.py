@@ -30,12 +30,12 @@ class Trainer:
         os.makedirs(self.save_dir, exist_ok=True)
         os.makedirs(os.path.join(self.save_dir, "checkpoints"), exist_ok=True)
         
-        self.fixed_noise = torch.randn(64, self.z_dim).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
+        self.fixed_noise = torch.randn(64, self.z_dim, 4, 4).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
         
         if options['rank'] == 0:
             self.logger = task.get_logger()
             self._log_metrics(0, 0, 0)
-            self._log_lr()
+            # self._log_lr()
 
     def _log_metrics(self, d_loss, g_loss, real_score):
         """Логирование метрик в ClearML"""
@@ -80,28 +80,29 @@ class Trainer:
         real_imgs = real_imgs.cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
         batch_size = real_imgs.size(0)
         
-        real_labels = torch.ones(batch_size, 1).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
-        fake_labels = torch.zeros(batch_size, 1).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
+        real_labels = torch.ones(batch_size,).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
+        fake_labels = torch.zeros(batch_size,).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
 
         self.optimizer_D.zero_grad()
         
-        real_outputs = self.discriminator(real_imgs)
+        real_outputs = self.discriminator(real_imgs).view(-1)
         d_loss_real = self.criterion(real_outputs, real_labels)
         d_loss_real.backward()
         
         noise = torch.randn(batch_size, self.z_dim, 4, 4).cuda().to(self.options['rank'], memory_format=torch.contiguous_format, non_blocking=True)
         fake_imgs = self.generator(noise)
-        fake_outputs = self.discriminator(fake_imgs.detach())
+        fake_outputs = self.discriminator(fake_imgs.detach()).view(-1)
         d_loss_fake = self.criterion(fake_outputs, fake_labels)
         d_loss_fake.backward()
         
         d_loss = d_loss_real + d_loss_fake
+
         # d_loss.backward()
         self.optimizer_D.step()
 
         self.optimizer_G.zero_grad()
 
-        outputs = self.discriminator(fake_imgs)
+        outputs = self.discriminator(fake_imgs).view(-1)
         g_loss = self.criterion(outputs, real_labels)
         
         g_loss.backward()
@@ -133,10 +134,10 @@ class Trainer:
                     losses['g_loss'], 
                     losses['real_score']
                 )
-                self._log_lr()
+                # self._log_lr()
                 
                 self.console.print(
-                    f"[Epoch {epoch}/{self.cfg.train.epochs}] "
+                    f"[Epoch {epoch}/{self.cfg.train.n_epoch}] "
                     f"[Step {step}/{len(self.options['train_loader'])}] "
                     f"D_loss: {losses['d_loss']:.4f} "
                     f"G_loss: {losses['g_loss']:.4f} "

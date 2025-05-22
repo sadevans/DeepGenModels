@@ -18,7 +18,7 @@ def vis_batch(batch, title):
 
 
 def logging_images(batch, step, num=16):
-    title = f'Generator pics: step {step}'
+    title = f'Generator pics'
     # vis_batch(batch[:num], title)
     batch = batch[:num]
     batch_grid = torchvision.utils.make_grid(batch, nrow=4)
@@ -45,7 +45,8 @@ def logging(logger, metrics, value_to_log, step, is_train=True, per_epoch=False,
     elif 'loss' in metrics:
         title = f'Running Loss {type}'
     else:
-        title = ''
+        title = f'{metrics}'
+        metrics = 'accuracy'
 
     if is_train:
         title = ' '.join([title, 'over Epochs']) if per_epoch else ' '.join([title, 'over Steps'])

@@ -92,14 +92,14 @@ def save_checkpoint(model, options, epoch, type='generator'):
         state = OrderedDict([
             ('state_dict', weights),
             ('optimizer', options['optimizer_G'].state_dict()),
-            ('scheduler', options['scheduler_G'].state_dict()),
+            # ('scheduler', options['scheduler_G'].state_dict()),
             ('epoch', epoch),
         ])
     elif type == 'discriminator':
         state = OrderedDict([
             ('state_dict', weights),
             ('optimizer', options['optimizer_D'].state_dict()),
-            ('scheduler', options['scheduler_D'].state_dict()),
+            # ('scheduler', options['scheduler_D'].state_dict()),
             ('epoch', epoch),
         ])
 

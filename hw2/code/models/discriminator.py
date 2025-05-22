@@ -29,5 +29,4 @@ class Discriminator(nn.Module):
         )
     
     def forward(self, img):
-        print('SHAPE:  ', img.shape)
         return self.model(img).view(-1, 1)

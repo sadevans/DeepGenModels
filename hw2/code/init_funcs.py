@@ -124,8 +124,8 @@ def init_model(config):
     discr = utils.load_model(config, type='discriminator', is_train=True).cuda()
 
     #sync_bn_net = torch.nn.SyncBatchNorm.convert_sync_batchnorm(net, rank)
-    ddp_gen = DDP(gen, device_ids=[rank])
-    ddp_discr = DDP(discr, device_ids=[rank])
+    ddp_gen = DDP(gen, device_ids=[rank], find_unused_parameters=True)
+    ddp_discr = DDP(discr, device_ids=[rank], find_unused_parameters=True)
 
 
     return rank, ddp_gen, ddp_discr
