@@ -61,22 +61,24 @@ bash download_and_convert.sh
 ### Обучение SD 1.5
 В качестве базовой модели обучила SD1.5 с такими параметрами:
 ```
-exp1.1
-
+--pretrained_model_name_or_path=$MODEL_NAME \
+--instance_data_dir=$INSTANCE_DIR \
+--class_data_dir=$CLASS_DIR \
+--output_dir=$OUTPUT_DIR \
+--instance_prompt="a photo of sks woman face" \
+--class_prompt="a photo of woman face " \
 --with_prior_preservation 
---prior_loss_weight=1.0
---resolution=512
---train_batch_size=1
---learning_rate=2e-6
---lr_scheduler="constant"
---lr_warmup_steps=0
---gradient_accumulation_steps=1
---num_class_images=500
---max_train_steps=800
---checkpointing_steps=800
---use_8bit_adam
---mixed_precision="no"
---train_text_encoder
+--resolution=512 \
+--train_batch_size=1 \
+--lr_scheduler="constant" \
+--lr_warmup_steps=0 \
+--gradient_accumulation_steps=1 \
+--num_class_images=500 \
+--max_train_steps=800 \
+--checkpointing_steps=800 \
+--use_8bit_adam \
+--mixed_precision="no"\
+--train_text_encoder \
 --seed 31
 ```
 Буду сравнивать такие промпты:
@@ -91,20 +93,68 @@ exp1.1
 
 `prompt5` : a face of sks woman, astronaut, moon, space, full height, 4K, raw, hrd, hd, high quality, sharp focus
 
-Результаты получились такие:
+Описание экспериментов:
+| exp      | гиперпараметры |
+|----------|----------|
+| `exp1.1` | `prior_loss_weight=1.0`, `lr=2e-6` | 
+| `exp2` | `prior_loss_weight=1.0`, `lr=1e-6` | 
+| `exp3` | `prior_loss_weight=1.2`, `lr=2e-6` | 
+
+Результаты:
+
 
 
 | exp      | `prompt1` | `prompt2` | `prompt3` | `prompt4` | `prompt5` |
 |----------|----------|----------|----------|----------|----------|
-| `exp1.1` | <img src="./results/exp1/prompt1_img1.png" width="300"> | <img src="./results/exp1/prompt2_img1.png" width="300"> | <img src="./results/exp1/prompt3_img1.png" width="300"> | <img src="./results/exp1/prompt4_img1.png" width="300"> | <img src="./results/exp1/prompt5_img1.png" width="300"> |
+| `exp1.1`| <img src="./results/exp1/prompt1_img1.png" width="300"> | <img src="./results/exp1/prompt2_img1.png" width="300"> | <img src="./results/exp1/prompt3_img1.png" width="300"> | <img src="./results/exp1/prompt4_img1.png" width="300"> | <img src="./results/exp1/prompt5_img1.png" width="300"> |
 | `exp2` | <img src="./results/exp2/prompt1_img1.png" width="300"> | <img src="./results/exp2/prompt2_img1.png" width="300"> | <img src="./results/exp2/prompt3_img1.png" width="300"> | <img src="./results/exp2/prompt4_img1.png" width="300"> | <img src="./results/exp2/prompt5_img1.png" width="300"> |
 | `exp3` | <img src="./results/exp3/prompt1_img1.png" width="300"> | <img src="./results/exp3/prompt2_img1.png" width="300"> | <img src="./results/exp3/prompt3_img1.png" width="300"> | <img src="./results/exp3/prompt4_img1.png" width="300"> | <img src="./results/exp3/prompt5_img1.png" width="300"> |
 
+Наиболее удачным получился `exp1.1`, изменение `lr` и `prior_loss_weight` не сказалось положительно на похожести генераций на настоящие фото.
+Однако все же увеличение `prior_loss_weight` сделало генерации более реалистичными и помогло избавиться от некоторых артефактов.
+
+Девушка в генерации по пятому промпту не выглядит вообще похожей на меня, возможно дело в том, что в предоставленных мною изображений не было фото в полный рост, где лицо было бы видно хуже. Поэтому в этой генерации скорее доминируют знания модели о мире.
 
 ### Обучение LORA
 
+Общие параметры обучения для экспериментов:
+```
+--pretrained_model_name_or_path="./experiments/exp1_v1" \
+--instance_data_dir=$INSTANCE_DIR \
+--instance_prompt="a photo of sks woman face" \
+--resolution=512 \
+--train_batch_size=1 \
+--gradient_accumulation_steps=1 \
+--learning_rate=1e-6 \
+--lr_scheduler="constant" \
+--lr_warmup_steps=0 \
+--max_train_steps=200 \
+--checkpointing_steps=20 \
+--use_8bit_adam \
+--mixed_precision="no"\
+--train_text_encoder \
+--validation_prompt="a photo of sks woman face in NYC, rain, dark, night, full moon, 4K, raw, hrd, hd, high quality, realism, sharp focus, beautiful eyes, detailed eyes" \
+--validation_epochs=50 \
+--seed=31 \
+```
+
+Описание экспериментов:
+| exp      | гиперпараметры |
+|----------|----------|
+| `exp1.1` | `rank=32` | 
+| `exp2` | `rank=64` | 
+| `exp4` | `rank=96` | 
+
+Результаты:
+
 | exp      | `prompt1` | `prompt2` | `prompt3` | `prompt4` | `prompt5` |
 |----------|----------|----------|----------|----------|----------|
-| `exp1.1` | <img src="./results/exp1_lora/prompt1_img1.png" width="300"> | <img src="./results/exp1_lora/prompt2_img1.png" width="300"> | <img src="./results/exp1_lora/prompt3_img1.png" width="300"> | <img src="./results/exp1_lora/prompt4_img1.png" width="300"> | <img src="./results/exp1_lora/prompt5_img1.png" width="300"> |
-| `exp2` | <img src="./results/exp2_lora/prompt1_img1.png" width="300"> | <img src="./results/exp2_lora/prompt2_img1.png" width="300"> | <img src="./results/exp2_lora/prompt3_img1.png" width="300"> | <img src="./results/exp2_lora/prompt4_img1.png" width="300"> | <img src="./results/exp2_lora/prompt5_img1.png" width="300"> |
-<!-- | `exp3` | <img src="./results/exp3/prompt1_img1.png" width="300"> | <img src="./results/exp3/prompt2_img1.png" width="300"> | <img src="./results/exp3/prompt3_img1.png" width="300"> | <img src="./results/exp3/prompt4_img1.png" width="300"> | <img src="./results/exp3/prompt5_img1.png" width="300"> | -->
+| `exp1.1`| <img src="./results/exp1_lora/prompt1_img1.png" width="300"> | <img src="./results/exp1_lora/prompt2_img1.png" width="300"> | <img src="./results/exp1_lora/prompt3_img1.png" width="300"> | <img src="./results/exp1_lora/prompt4_img1.png" width="300"> | <img src="./results/exp1_lora/prompt5_img1.png" width="300"> |
+| `exp2`| <img src="./results/exp2_lora/prompt1_img1.png" width="300"> | <img src="./results/exp2_lora/prompt2_img1.png" width="300"> | <img src="./results/exp2_lora/prompt3_img1.png" width="300"> | <img src="./results/exp2_lora/prompt4_img1.png" width="300"> | <img src="./results/exp2_lora/prompt5_img1.png" width="300"> |
+| `exp4`| <img src="./results/exp4_lora/prompt1_img1.png" width="300"> | <img src="./results/exp4_lora/prompt2_img1.png" width="300"> | <img src="./results/exp4_lora/prompt3_img1.png" width="300"> | <img src="./results/exp4_lora/prompt4_img1.png" width="300"> | <img src="./results/exp4_lora/prompt5_img1.png" width="300"> |
+
+### Сравнение LORA и Unet
+
+
+
+### Controlnet
