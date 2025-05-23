@@ -3,6 +3,11 @@
 Выполнила Горохова Александра Сергеевна
 
 ### 1. Окружение
+
+```bash
+git clone https://github.com/TimDettmers/bitsandbytes.git
+```
+
 Создайте окружение в anaconda3:
 ```bash
 conda env create -f environment.yml
@@ -10,6 +15,9 @@ conda activate genmodels
 ```
 
 ```bash
+cd bitsandbytes
+python setup.py install
+cd ..
 git clone https://github.com/huggingface/diffusers
 pip install git+https://github.com/huggingface/diffusers
 ```
@@ -21,10 +29,10 @@ python check_env.py
 
 Вывод должен быть примерно таким:
 ```
-PyTorch version: 2.3.0+cu121
+PyTorch version: 2.7.0+cu126
 CUDA available: True
-CUDA version: 12.1
-cuDNN version: 8902
+CUDA version: 12.6
+cuDNN version: 90501
 Accelerator initialized successfully!
 ```
 
@@ -153,8 +161,35 @@ bash download_and_convert.sh
 | `exp2`| <img src="./results/exp2_lora/prompt1_img1.png" width="300"> | <img src="./results/exp2_lora/prompt2_img1.png" width="300"> | <img src="./results/exp2_lora/prompt3_img1.png" width="300"> | <img src="./results/exp2_lora/prompt4_img1.png" width="300"> | <img src="./results/exp2_lora/prompt5_img1.png" width="300"> |
 | `exp4`| <img src="./results/exp4_lora/prompt1_img1.png" width="300"> | <img src="./results/exp4_lora/prompt2_img1.png" width="300"> | <img src="./results/exp4_lora/prompt3_img1.png" width="300"> | <img src="./results/exp4_lora/prompt4_img1.png" width="300"> | <img src="./results/exp4_lora/prompt5_img1.png" width="300"> |
 
+Между генерациями небольшие отличия, так как видимо была хорошая предобученная модель. Однако лучше всего все же получились генерации при самом большом `rank` = 96. Генерация с `rank` = 32 мало отличается от лучшего эксперимента Unet. В таком случае можно сделать вывод, что глубина модели положительно влияет на качество генерации.
+
 ### Сравнение LORA и Unet
+Выбрала лучшую генерацию Unet  - это `exp1.1`, и Lora - `exp4`. Сравнение генераций:
 
+| exp      | `prompt1` | `prompt2` | `prompt3` | `prompt4` | `prompt5` |
+|----------|----------|----------|----------|----------|----------|
+| Unet best| <img src="./results/exp1/prompt1_img1.png" width="300"> | <img src="./results/exp1/prompt2_img1.png" width="300"> | <img src="./results/exp1/prompt3_img1.png" width="300"> | <img src="./results/exp1/prompt4_img1.png" width="300"> | <img src="./results/exp1/prompt5_img1.png" width="300"> |
+| Lora best| <img src="./results/exp4_lora/prompt1_img1.png" width="300"> | <img src="./results/exp4_lora/prompt2_img1.png" width="300"> | <img src="./results/exp4_lora/prompt3_img1.png" width="300"> | <img src="./results/exp4_lora/prompt4_img1.png" width="300"> | <img src="./results/exp4_lora/prompt5_img1.png" width="300"> |
 
+Видим, что все же эксперимент с Lora имеет более качественные генерации.
 
 ### Controlnet
+
+Контрольное изображение:
+
+<img src="./control_images/style_arcane.jpg" width="600">
+
+Попробовала различные варианты Controlnet для пяти промптов. Результаты:
+
+
+| exp      | `prompt1` | `prompt2` | `prompt3` | `prompt4` | `prompt5` |
+|----------|----------|----------|----------|----------|----------|
+| canny| <img src="./results/exp1_controlnet/prompt1_image1.png" width="300"> | <img src="./results/exp1_controlnet/prompt2_image2.png" width="300"> | <img src="./results/exp1_controlnet/prompt3_image3.png" width="300"> | <img src="./results/exp1_controlnet/prompt4_image4.png" width="300"> | <img src="./results/exp1_controlnet/prompt5_image5.png" width="300"> |
+| depth| <img src="./results/exp2_controlnet/prompt1_image1.png" width="300"> | <img src="./results/exp2_controlnet/prompt2_image2.png" width="300"> | <img src="./results/exp2_controlnet/prompt3_image3.png" width="300"> | <img src="./results/exp2_controlnet/prompt4_image4.png" width="300"> | <img src="./results/exp2_controlnet/prompt5_image5.png" width="300"> |
+| pose| <img src="./results/exp3_controlnet/prompt1_image1.png" width="300"> | <img src="./results/exp3_controlnet/prompt2_image2.png" width="300"> | <img src="./results/exp3_controlnet/prompt3_image3.png" width="300"> | <img src="./results/exp3_controlnet/prompt4_image4.png" width="300"> | <img src="./results/exp3_controlnet/prompt5_image5.png" width="300"> |
+
+- `canny` - подгоняет черты лица, его форму, волосы под контрольное изображение
+- `depth` - как будто бы больше переносит перспективу и соотношение объектов контрольного изображения на генерации
+- `pose` - в большей степени подгоняет позу в генерации под позу контрольного изображения
+
+Во всех случаях начинает страдать сама генерация, появляется больше артефактов.
